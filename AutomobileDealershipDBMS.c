@@ -12,36 +12,49 @@ void AddNewSalesman(sqlite3* db);
 void AddNewMechanic(sqlite3* db);
 void AddNewWorkOrder(sqlite3* db);
 void RemoveField(sqlite3* db);
+void UpdateField(sqlite3* db);
 
 int main(int argc, char **argv) {
 	sqlite3 *db;
 	char *UserSelection = malloc(sizeof(char));
 	int *UserSelectionInt = malloc(sizeof(int));
-	char *ErrMsg = malloc(sizeof(int));
+	char *ErrMsg = malloc(sizeof(char));
 	*ErrMsg = (int)sqlite3_open_v2("AutomobileDatabase.db", &db, SQLITE_OPEN_READWRITE, NULL) * sizeof(int);
 
-	if (*ErrMsg != SQLITE_OK) {
+	if (*ErrMsg != 0) {
 		printf("Error: Can't open database! %s\n", sqlite3_errmsg(db));
 		return 1;
 	}
 	else {
 		printf("Connected to the database successfully.\n");
 	}
-	printf("\nWelcome to the Automobile Dealership DBMS\n");
+		printf("\nWelcome to the Automobile Dealership DBMS\n");
 	do {
-    puts("\n------ MENU ------");
-	puts("\n-- CRUD Operations --");
-    puts("1) Add a New Vehicle");
-    puts("2) Add a New Lot in the Inventory");
-	puts("3) Enter a New Customer");
-	puts("4) Enter a New Salesman");
-	puts("5) Enter a New Mechanic");
-	puts("6) Add a New Work Order");
-	puts("7) Delete a Field");
-	puts("Press 0 to Exit.\n");
-	printf("Plase Choose an Option from the Menu: ");
-    //take integer input from the user and store it in UserSelection using fgets
-	fgets(UserSelection, 20, stdin);
+		puts("\n------ MENU ------");
+		puts("\n-- CRUD Operations --");
+		puts("1) Add a New Vehicle");
+		puts("2) Add a New Lot in the Inventory");
+		puts("3) Enter a New Customer");
+		puts("4) Enter a New Salesman");
+		puts("5) Enter a New Mechanic");
+		puts("6) Add a New Work Order");
+		puts("7) Delete a Field");
+		puts("8) Update a Field");
+		puts("");
+		puts("\n-- Display Operations --");
+		puts("8) Display All Vehicles");
+		puts("9) Display All Lots");
+		puts("10) Display All Customers");
+		puts("11) Display All Salesmen");
+		puts("12) Display All Mechanics");
+		puts("13) Display All Work Orders");
+		puts("");
+		puts("\n-- Quries/Insights --");
+
+		puts("Press 0 to Exit.\n");
+		printf("Please Choose an Option from the Menu: ");
+		fgets(UserSelection, 20, stdin);
+		
 	while (isdigit(*UserSelection) == 0) {
 		printf("\nInvalid Input. Please Enter a Valid Choice: ");
 		fgets(UserSelection, 20, stdin);
@@ -69,9 +82,13 @@ int main(int argc, char **argv) {
         break;
 	case 7:
 		RemoveField(db);
+		break;
+	case 8:
+		UpdateField(db);
+		break;
 	case 0:
 		printf("\nThank you for using the Automobile Dealership DBMS. Goodbye!\n");
-		break;
+		break;	
     default:
         printf("\nInvalid Input. Please Enter a Valid Choice and Try Again.\n");
         break;
@@ -95,7 +112,7 @@ static int DisplayDataCallback(void *data, int argc, char **argv, char **ColName
 }
 
 void AddNewVehicle(sqlite3* db) {
-	char *ErrMsg = malloc(sizeof(int));
+	char *ErrMsg = malloc(sizeof(char));
 	char* sql = "INSERT INTO Vehicle (VIN, Manufacturer, ModelYear, Name, TrimLevel, BodyType,\
 	Color, Mileage, CustomerID, MechanicID, WorkOrderID, InventoryLotNumber, SalesmanID) VALUES (?,\
 	?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);";
@@ -206,14 +223,17 @@ void AddNewVehicle(sqlite3* db) {
 		sqlite3_bind_text(stmt, 13, SalesmanID, -1, SQLITE_STATIC);
 	}
 	//execute the statement
-	sqlite3_step(stmt);
-	//finalize the statement with error checking
-	*ErrMsg = (int)sqlite3_finalize(stmt) * sizeof(int);
-	if (*ErrMsg != SQLITE_OK) {
-		printf("Error: %s\n", sqlite3_errmsg(db));
+	*ErrMsg = sqlite3_step(stmt);
+	(int)*ErrMsg;
+	//print ErrMsg
+	if (*ErrMsg != SQLITE_OK && ((int)*ErrMsg) != SQLITE_DONE) {
+		printf("\nError Performing Operation.\n");
+	} else {
+		printf("\nVehicle Added Successfully.\n");
 	}
-	else {
-		printf("Vehicle added successfully.\n");
+	*ErrMsg = (int)sqlite3_finalize(stmt) * sizeof(int);
+	if (*ErrMsg != SQLITE_OK && ((int)*ErrMsg) != SQLITE_DONE) {
+		printf("Error: %s\n", sqlite3_errmsg(db));
 	}
 	free(ErrMsg);
 	free(VIN);
@@ -233,7 +253,7 @@ void AddNewVehicle(sqlite3* db) {
 }
 
 void AddNewLot(sqlite3* db) {
-	char* ErrMsg = malloc(sizeof(int));
+	char* ErrMsg = malloc(sizeof(char));
 	char* sql = "INSERT INTO Inventory (NumVehicles) VALUES ((?));";
 	char* NumVehicles = malloc(sizeof(char) * 20);
 
@@ -248,14 +268,16 @@ void AddNewLot(sqlite3* db) {
 	sqlite3_stmt *stmt;
 	sqlite3_prepare_v2(db, sql, -1, &stmt, NULL);
 	sqlite3_bind_text(stmt, 1, NumVehicles, -1, SQLITE_STATIC);
-	sqlite3_step(stmt);
-
-	*ErrMsg = (int)sqlite3_finalize(stmt) * sizeof(int);
-	if (*ErrMsg != SQLITE_OK) {
-		printf("Error: %s\n", sqlite3_errmsg(db));
+	*ErrMsg = sqlite3_step(stmt);
+	(int)*ErrMsg;
+	if (*ErrMsg != SQLITE_OK && ((int)*ErrMsg) != SQLITE_DONE) {
+		printf("\nError Performing Operation.\n");
+	} else {
+		printf("\nLot Added Successfully.\n");
 	}
-	else {
-		printf("New Lot added Successfully.\n");
+	*ErrMsg = (int)sqlite3_finalize(stmt) * sizeof(int);
+	if (*ErrMsg != SQLITE_OK && ((int)*ErrMsg) != SQLITE_DONE) {
+		printf("Error: %s\n", sqlite3_errmsg(db));
 	}
 	free(ErrMsg);
 	free(NumVehicles);
@@ -263,7 +285,7 @@ void AddNewLot(sqlite3* db) {
 }
 
 void AddNewCustomer(sqlite3* db) {
-	char* ErrMsg = malloc(sizeof(int));
+	char* ErrMsg = malloc(sizeof(char));
 	char* sql = "INSERT INTO Customer (Name, PhoneNumber, Salesman)\
 	VALUES ((?), (?), (?));";
 	char* Name = malloc(sizeof(char) * 50);
@@ -293,14 +315,16 @@ void AddNewCustomer(sqlite3* db) {
 	sqlite3_bind_text(stmt, 1, Name, -1, SQLITE_STATIC);
 	sqlite3_bind_text(stmt, 2, PhoneNumber, -1, SQLITE_STATIC);
 	sqlite3_bind_text(stmt, 3, Salesman, -1, SQLITE_STATIC);
-	sqlite3_step(stmt);
-
-	*ErrMsg = (int)sqlite3_finalize(stmt) * sizeof(int);
-	if (*ErrMsg != SQLITE_OK) {
-		printf("\nError: %s\n", sqlite3_errmsg(db));
+	*ErrMsg = sqlite3_step(stmt);
+	(int)*ErrMsg;
+	if (*ErrMsg != SQLITE_OK && ((int)*ErrMsg) != SQLITE_DONE) {
+		printf("\nError Performing Operation.\n");
+	} else {
+		printf("\nNew Customer Added Successfully.\n");
 	}
-	else {
-		printf("\nNew Customer added Successfully.\n");
+	*ErrMsg = (int)sqlite3_finalize(stmt) * sizeof(int);
+	if (*ErrMsg != SQLITE_OK && ((int)*ErrMsg) != SQLITE_DONE) {
+		printf("Error: %s\n", sqlite3_errmsg(db));
 	}
 	free(ErrMsg);
 	free(Name);
@@ -310,7 +334,7 @@ void AddNewCustomer(sqlite3* db) {
 }
 
 void AddNewSalesman(sqlite3* db) {
-	char* ErrMsg = malloc(sizeof(int));
+	char* ErrMsg = malloc(sizeof(char));
 	char* sql = "INSERT INTO Salesman (SalesmanName)\
 	VALUES ((?));";
 	char* SalesmanName = malloc(sizeof(char) * 50);
@@ -322,14 +346,17 @@ void AddNewSalesman(sqlite3* db) {
 	sqlite3_stmt *stmt;
 	sqlite3_prepare_v2(db, sql, -1, &stmt, NULL);
 	sqlite3_bind_text(stmt, 1, SalesmanName, -1, SQLITE_STATIC);
-	sqlite3_step(stmt);
 
-	*ErrMsg = (int)sqlite3_finalize(stmt) * sizeof(int);
-	if (*ErrMsg != SQLITE_OK) {
-		printf("\nError: %s\n", sqlite3_errmsg(db));
+	*ErrMsg = sqlite3_step(stmt);
+	(int)*ErrMsg;
+	if (*ErrMsg != SQLITE_OK && ((int)*ErrMsg) != SQLITE_DONE) {
+		printf("\nError Performing Operation.\n");
+	} else {
+		printf("\nNew Salesman Added Successfully.\n");
 	}
-	else {
-		printf("\nNew Salesman added Successfully.\n");
+	*ErrMsg = (int)sqlite3_finalize(stmt) * sizeof(int);
+	if (*ErrMsg != SQLITE_OK && ((int)*ErrMsg) != SQLITE_DONE) {
+		printf("Error: %s\n", sqlite3_errmsg(db));
 	}
 	free(ErrMsg);
 	free(SalesmanName);
@@ -337,7 +364,7 @@ void AddNewSalesman(sqlite3* db) {
 }
 
 void AddNewMechanic(sqlite3* db) {
-	char* ErrMsg = malloc(sizeof(int));
+	char* ErrMsg = malloc(sizeof(char));
 	char* sql = "INSERT INTO Mechanic (MechanicName, AssignedWork)\
 	VALUES ((?), (?));";
 	char* MechanicName = malloc(sizeof(char) * 50);
@@ -365,14 +392,17 @@ void AddNewMechanic(sqlite3* db) {
 		sqlite3_bind_text(stmt, 2, AssignedWork, -1, SQLITE_STATIC);
 	}
 
-	sqlite3_step(stmt);
-
-	*ErrMsg = (int)sqlite3_finalize(stmt) * sizeof(int);
-	if (*ErrMsg != SQLITE_OK) {
-		printf("\nError: %s\n", sqlite3_errmsg(db));
+	*ErrMsg = sqlite3_step(stmt);
+	(int)*ErrMsg;
+	printf("%s", ErrMsg);
+	if (*ErrMsg != SQLITE_OK && ((int)*ErrMsg) != SQLITE_DONE) {
+		printf("\nError Performing Operation.\n");
+	} else {
+		printf("\nNew Mechanic Added Successfully.\n");
 	}
-	else {
-		printf("\nNew Mechanic added Successfully.\n");
+	*ErrMsg = (int)sqlite3_finalize(stmt) * sizeof(int);
+	if (*ErrMsg != SQLITE_OK && ((int)*ErrMsg) != SQLITE_DONE) {
+		printf("Error: %s\n", sqlite3_errmsg(db));
 	}
 	free(ErrMsg);
 	free(MechanicName);
@@ -380,7 +410,7 @@ void AddNewMechanic(sqlite3* db) {
 }
 
 void AddNewWorkOrder(sqlite3* db) {
-	char* ErrMsg = malloc(sizeof(int));
+	char* ErrMsg = malloc(sizeof(char));
 	char* sql = "INSERT INTO WorkOrder (PriceQuote, WorkDetails)\
 	VALUES ((?), (?));";
 	//Enter a NUMERIC value in PriceQuote
@@ -409,15 +439,18 @@ void AddNewWorkOrder(sqlite3* db) {
 		sqlite3_bind_text(stmt, 2, WorkDetails, -1, SQLITE_STATIC);
 	}
 	
-	sqlite3_step(stmt);
-
+	*ErrMsg = sqlite3_step(stmt);
+	(int)*ErrMsg;
+	if (*ErrMsg != SQLITE_OK && ((int)*ErrMsg) != SQLITE_DONE) {
+		printf("\nError Performing Operation.\n");
+	} else {
+		printf("\nWork Order Added Successfully.\n");
+	}
 	*ErrMsg = (int)sqlite3_finalize(stmt) * sizeof(int);
-	if (*ErrMsg != SQLITE_OK) {
-		printf("\nError: %s\n", sqlite3_errmsg(db));
-	}
-	else {
-		printf("\nNew Work Order added Successfully.\n");
-	}
+	if (*ErrMsg != SQLITE_OK && ((int)*ErrMsg) != SQLITE_DONE) {
+		printf("Error: %s\n", sqlite3_errmsg(db));
+	} 
+
 	free(ErrMsg);
 	free(PriceQuote);
 	free(WorkDetails);
@@ -425,6 +458,942 @@ void AddNewWorkOrder(sqlite3* db) {
 }
 
 void RemoveField(sqlite3* db) {
-	char* ErrMsg = malloc(sizeof(int));
-	
+	char* ErrMsg = malloc(sizeof(char));
+	char* ID = malloc(sizeof(char) * 30);
+	char* sql = malloc(sizeof(char) * 50);
+
+	int choice = 0;
+	do {
+		puts("\n---- Remove a Field ----\n");
+		puts("What would you like to remove?");
+		puts("1. Remove a Customer");
+		puts("2. Remove a Salesman");
+		puts("3. Remove a Mechanic");
+		puts("4. Remove a Work Order");
+		puts("5. Remove a Vehicle");
+		puts("6. Return to Main Menu");
+		printf("Enter your choice: ");
+		scanf("%d", &choice);
+		getchar();
+		
+	switch (choice) {
+		case 1:
+			sql = "DELETE FROM Customer WHERE CustomerID = (?);";
+			printf("Enter the Customer ID to remove: ");
+			fgets(ID, 20, stdin);
+
+			while (!isdigit(*ID)) {
+				printf("Please Enter a Valid Customer ID: ");
+				fgets(ID, 20, stdin);
+			}
+
+			sqlite3_stmt *stmt;
+			sqlite3_prepare_v2(db, sql, -1, &stmt, NULL);
+			sqlite3_bind_text(stmt, 1, ID, -1, SQLITE_STATIC);
+			*ErrMsg = sqlite3_step(stmt);
+			(int)*ErrMsg;
+			if (*ErrMsg != SQLITE_OK && ((int)*ErrMsg) != SQLITE_DONE) {
+				printf("\nError Performing Operation.\n");
+			} else {
+				printf("\nCustomer Removed Successfully.\n");
+			}
+			*ErrMsg = (int)sqlite3_finalize(stmt) * sizeof(int);
+			if (*ErrMsg != SQLITE_OK && ((int)*ErrMsg) != SQLITE_DONE) {
+				printf("\nError performing operation.\n");
+			} 
+			break;
+
+		case 2:
+			sql = "DELETE FROM Salesman WHERE SalesmanID = (?);";
+			printf("Enter the Salesman ID to remove: ");
+			fgets(ID, 20, stdin);
+
+			while (!isdigit(*ID)) {
+				printf("Please Enter a Valid Salesman ID: ");
+				fgets(ID, 20, stdin);
+			}
+
+			sqlite3_stmt *stmt2;
+			sqlite3_prepare_v2(db, sql, -1, &stmt2, NULL);
+			sqlite3_bind_text(stmt2, 1, ID, -1, SQLITE_STATIC);
+			*ErrMsg = sqlite3_step(stmt2);
+			(int)*ErrMsg;
+			if (*ErrMsg != SQLITE_OK && ((int)*ErrMsg) != SQLITE_DONE) {
+				printf("\nError Performing Operation.\n");
+			} else {
+				printf("\nSalesman Removed Successfully.\n");
+			}
+			*ErrMsg = (int)sqlite3_finalize(stmt2) * sizeof(int);
+			if (*ErrMsg != SQLITE_OK && ((int)*ErrMsg) != SQLITE_DONE) {
+				printf("\nError performing operation.\n");
+			} 
+			break;
+
+		case 3:
+			sql = "DELETE FROM Mechanic WHERE MechanicID = (?);";
+			printf("Enter the Mechanic ID to remove: ");
+			fgets(ID, 20, stdin);
+
+			while (!isdigit(*ID)) {
+				printf("Please Enter a Valid Mechanic ID: ");
+				fgets(ID, 20, stdin);
+			}
+
+			sqlite3_stmt *stmt3;
+			sqlite3_prepare_v2(db, sql, -1, &stmt3, NULL);
+			sqlite3_bind_text(stmt3, 1, ID, -1, SQLITE_STATIC);
+			*ErrMsg = sqlite3_step(stmt3);
+			(int)*ErrMsg;
+			if (*ErrMsg != SQLITE_OK && ((int)*ErrMsg) != SQLITE_DONE) {
+				printf("\nError Performing Operation.\n");
+			} else {
+				printf("\nMechanic Removed Successfully.\n");
+			}
+			*ErrMsg = (int)sqlite3_finalize(stmt3) * sizeof(int);
+			if (*ErrMsg != SQLITE_OK && ((int)*ErrMsg) != SQLITE_DONE) {
+				printf("\nError performing operation.\n");
+			} 
+			break;
+		case 4:
+			sql = "DELETE FROM WorkOrder WHERE WorkOrderID = (?);";
+			printf("Enter the Work Order ID to remove: ");
+			fgets(ID, 20, stdin);
+
+			while (!isdigit(*ID)) {
+				printf("Please Enter a Valid Work Order ID: ");
+				fgets(ID, 20, stdin);
+			}
+
+			sqlite3_stmt *stmt4;
+			sqlite3_prepare_v2(db, sql, -1, &stmt4, NULL);
+			sqlite3_bind_text(stmt4, 1, ID, -1, SQLITE_STATIC);
+			*ErrMsg = sqlite3_step(stmt4);
+			(int)*ErrMsg;
+			if (*ErrMsg != SQLITE_OK && ((int)*ErrMsg) != SQLITE_DONE) {
+				printf("\nError Performing Operation.\n");
+			} else {
+				printf("\nWork Order Removed Successfully.\n");
+			}
+			*ErrMsg = (int)sqlite3_finalize(stmt4) * sizeof(int);
+			if (*ErrMsg != SQLITE_OK && ((int)*ErrMsg) != SQLITE_DONE) {
+				printf("\nError performing operation.\n");
+			} 
+			break;
+
+		case 5:
+			sql = "DELETE FROM Vehicle WHERE VIN = (?);";
+			printf("Enter the Vehicle VIN to remove: ");
+			fgets(ID, 20, stdin);
+
+			sqlite3_stmt *stmt5;
+			sqlite3_prepare_v2(db, sql, -1, &stmt5, NULL);
+			sqlite3_bind_text(stmt5, 1, ID, -1, SQLITE_STATIC);
+			*ErrMsg = sqlite3_step(stmt5);
+			(int)*ErrMsg;
+			if (*ErrMsg != SQLITE_OK && ((int)*ErrMsg) != SQLITE_DONE) {
+				printf("\nError Performing Operation.\n");
+			} else {
+				printf("\nVehicle Removed Successfully.\n");
+			}
+			*ErrMsg = (int)sqlite3_finalize(stmt5) * sizeof(int);
+			if (*ErrMsg != SQLITE_OK && ((int)*ErrMsg) != SQLITE_DONE) {
+				printf("\nError performing operation.\n");
+			} 
+			break;
+
+		case 6:
+			break;
+
+		default:
+			printf("\nInvalid Choice. Please try again.\n");
+			break;
+		}
+	} while (choice < 1 || choice > 6);
+	free(ErrMsg);
+	free(ID);
+	return;
+}
+
+void UpdateField(sqlite3* db) {
+	char* ErrMsg = malloc(sizeof(char));
+	char* ID = malloc(sizeof(char) * 30);
+	char* field = malloc(sizeof(char) * 255);
+	char* sql = malloc(sizeof(char) * 100);
+	int choice, choice2 = 0;
+
+	do {
+		puts("\n---- Update a Field ----\n");
+		puts("What Table would you like to Update a Field in?");
+		puts("1. Customer");
+		puts("2. Salesman");
+		puts("3. Mechanic");
+		puts("4. Work Order");
+		puts("5. Vehicle");
+		puts("6. Return to Main Menu");
+		printf("Enter your choice: ");
+		scanf("%d", &choice);
+		getchar();
+		
+	switch (choice) {
+		case 1:
+			do {
+				puts("\nWhich Field in Customer Table would you like to Update?");
+				puts("1. Name");
+				puts("2. PhoneNumber");
+				puts("3. Salesman");
+				puts("4. Return to Main Menu");
+				printf("Enter your choice: ");
+				scanf("%d", &choice2);
+				getchar();
+
+				switch (choice2) {
+					case 1:
+						sql = "UPDATE Customer SET Name = (?) WHERE CustomerID = (?);";
+						printf("Enter the Customer ID to Update: ");
+						fgets(ID, 20, stdin);
+
+						while (!isdigit(*ID)) {
+							printf("Please Enter a Valid Customer ID: ");
+							fgets(ID, 20, stdin);
+						}
+
+						printf("Enter the New Name: ");
+						fgets(field, 20, stdin);
+
+						sqlite3_stmt *stmt1;
+						sqlite3_prepare_v2(db, sql, -1, &stmt1, NULL);
+						sqlite3_bind_text(stmt1, 1, field, -1, SQLITE_STATIC);
+						sqlite3_bind_text(stmt1, 2, ID, -1, SQLITE_STATIC);
+						*ErrMsg = sqlite3_step(stmt1);
+						(int)*ErrMsg;
+						if (*ErrMsg != SQLITE_OK && ((int)*ErrMsg) != SQLITE_DONE) {
+							printf("\nError Performing Operation.\n");
+						} else {
+							printf("\nCustomer Name Updated Successfully.\n");
+						}
+						*ErrMsg = (int)sqlite3_finalize(stmt1) * sizeof(int);
+						if (*ErrMsg != SQLITE_OK && ((int)*ErrMsg) != SQLITE_DONE) {
+							printf("\nError performing operation.\n");
+						} 
+						break;
+					case 2: 
+						sql = "UPDATE Customer SET PhoneNumber = (?) WHERE CustomerID = (?);";
+						printf("Enter the Customer ID to Update: ");
+						fgets(ID, 20, stdin);
+
+						while (!isdigit(*ID)) {
+							printf("Please Enter a Valid Customer ID: ");
+							fgets(ID, 20, stdin);
+						}
+
+						printf("Enter the New Phone Number: ");
+						fgets(field, 20, stdin);
+
+						sqlite3_stmt *stmt2;
+						sqlite3_prepare_v2(db, sql, -1, &stmt2, NULL);
+						sqlite3_bind_text(stmt2, 1, field, -1, SQLITE_STATIC);
+						sqlite3_bind_text(stmt2, 2, ID, -1, SQLITE_STATIC);
+						*ErrMsg = sqlite3_step(stmt2);
+						(int)*ErrMsg;
+						if (*ErrMsg != SQLITE_OK && ((int)*ErrMsg) != SQLITE_DONE) {
+							printf("\nError Performing Operation.\n");
+						} else {
+							printf("\nCustomer Phone Number Updated Successfully.\n");
+						}
+						*ErrMsg = (int)sqlite3_finalize(stmt2) * sizeof(int);
+						if (*ErrMsg != SQLITE_OK && ((int)*ErrMsg) != SQLITE_DONE) {
+							printf("\nError performing operation.\n");
+						} 
+						break;
+					case 3:
+						sql = "UPDATE Customer SET Salesman = (?) WHERE CustomerID = (?);";
+						printf("Enter the Customer ID to Update: ");
+						fgets(ID, 20, stdin);
+
+						while (!isdigit(*ID)) {
+							printf("Please Enter a Valid Customer ID: ");
+							fgets(ID, 20, stdin);
+						}
+
+						printf("Enter the New Assigned SalesmanID: ");
+						fgets(field, 20, stdin);
+
+						while (!isdigit(*field)) {
+							printf("Please Enter a Valid Salesman ID: ");
+							fgets(field, 20, stdin);
+						}
+
+						sqlite3_stmt *stmt3;
+						sqlite3_prepare_v2(db, sql, -1, &stmt3, NULL);
+						sqlite3_bind_text(stmt3, 1, field, -1, SQLITE_STATIC);
+						sqlite3_bind_text(stmt3, 2, ID, -1, SQLITE_STATIC);
+						*ErrMsg = sqlite3_step(stmt3);
+						(int)*ErrMsg;
+						if (*ErrMsg != SQLITE_OK && ((int)*ErrMsg) != SQLITE_DONE) {
+							printf("\nError Performing Operation.\n");
+						} else {
+							printf("\nAssigned Salesman Updated Successfully.\n");
+						}
+						*ErrMsg = (int)sqlite3_finalize(stmt3) * sizeof(int);
+						if (*ErrMsg != SQLITE_OK && ((int)*ErrMsg) != SQLITE_DONE) {
+							printf("\nError performing operation.\n");
+						} 
+						break;
+					case 4:
+						break;
+					default:
+						puts("\nInvalid Choice. Please Try Again.");
+						break;
+					}
+			} while (choice2 < 1 || choice2 > 4);
+			break;
+
+		case 2:
+			sql = "UPDATE Salesman SET SalesmanName = (?) WHERE SalesmanID = (?);";
+			printf("Enter the Salesman ID to Update: ");
+			fgets(ID, 20, stdin);
+
+			while (!isdigit(*ID)) {
+				printf("Please Enter a Valid Salesman ID: ");
+				fgets(ID, 20, stdin);
+			}
+
+			printf("Enter the New Salesman Name: ");
+			fgets(field, 20, stdin);
+
+			sqlite3_stmt *stmt4;
+			sqlite3_prepare_v2(db, sql, -1, &stmt4, NULL);
+			sqlite3_bind_text(stmt4, 1, field, -1, SQLITE_STATIC);
+			sqlite3_bind_text(stmt4, 2, ID, -1, SQLITE_STATIC);
+			*ErrMsg = sqlite3_step(stmt4);
+			(int)*ErrMsg;
+			if (*ErrMsg != SQLITE_OK && ((int)*ErrMsg) != SQLITE_DONE) {
+				printf("\nError Performing Operation.\n");
+			} else {
+				printf("\nSalesman Name Updated Successfully.\n");
+			}
+			*ErrMsg = (int)sqlite3_finalize(stmt4) * sizeof(int);
+			if (*ErrMsg != SQLITE_OK && ((int)*ErrMsg) != SQLITE_DONE) {
+				printf("\nError performing operation.\n");
+			} 
+			break;
+			
+		case 3:
+			do {
+				puts("\nWhich Field in Mechanic Table would you like to Update?");
+				puts("1. Name");
+				puts("2. Assigned Work");
+				puts("3. Return to Main Menu");
+				printf("Enter your choice: ");
+				scanf("%d", &choice2);
+				getchar();
+
+				switch (choice2) {
+					case 1:
+						sql = "UPDATE Mechanic SET MechanicName = (?) WHERE MechanicID = (?);";
+						printf("Enter the Mechanic ID to Update: ");
+						fgets(ID, 20, stdin);
+
+						while (!isdigit(*ID)) {
+							printf("Please Enter a Valid Mechanic ID: ");
+							fgets(ID, 20, stdin);
+						}
+
+						printf("Enter the New Mechanic Name: ");
+						fgets(field, 20, stdin);
+
+						sqlite3_stmt *stmt5;
+						sqlite3_prepare_v2(db, sql, -1, &stmt5, NULL);
+						sqlite3_bind_text(stmt5, 1, field, -1, SQLITE_STATIC);
+						sqlite3_bind_text(stmt5, 2, ID, -1, SQLITE_STATIC);
+						*ErrMsg = sqlite3_step(stmt5);
+						(int)*ErrMsg;
+						if (*ErrMsg != SQLITE_OK && ((int)*ErrMsg) != SQLITE_DONE) {
+							printf("\nError Performing Operation.\n");
+						} else {
+							printf("\nMechanic Name Updated Successfully.\n");
+						}
+						*ErrMsg = (int)sqlite3_finalize(stmt5) * sizeof(int);
+						if (*ErrMsg != SQLITE_OK && ((int)*ErrMsg) != SQLITE_DONE) {
+							printf("\nError performing operation.\n");
+						} 
+						break;
+
+					case 2:
+						sql = "UPDATE Mechanic SET AssignedWork = (?) WHERE MechanicID = (?);";
+						printf("Enter the Mechanic ID to Update: ");
+						fgets(ID, 20, stdin);
+
+						while (!isdigit(*ID)) {
+							printf("Please Enter a Valid Mechanic ID: ");
+							fgets(ID, 20, stdin);
+						}
+
+						printf("Enter the New Assigned Work: ");
+						fgets(field, 20, stdin);
+
+						while (!isdigit(*field)) {
+							printf("Please Enter a Valid Work ID: ");
+							fgets(field, 20, stdin);
+						}
+
+						sqlite3_stmt *stmt6;
+						sqlite3_prepare_v2(db, sql, -1, &stmt6, NULL);
+						sqlite3_bind_text(stmt6, 1, field, -1, SQLITE_STATIC);
+						sqlite3_bind_text(stmt6, 2, ID, -1, SQLITE_STATIC);
+						*ErrMsg = sqlite3_step(stmt6);
+						(int)*ErrMsg;
+						if (*ErrMsg != SQLITE_OK && ((int)*ErrMsg) != SQLITE_DONE) {
+							printf("\nError Performing Operation.\n");
+						} else {
+							printf("Assigned Work Updated Successfully.\n");
+						}
+						*ErrMsg = (int)sqlite3_finalize(stmt6) * sizeof(int);
+						if (*ErrMsg != SQLITE_OK && ((int)*ErrMsg) != SQLITE_DONE) {
+							printf("\nError performing operation.\n");
+						} 
+						break;
+
+					case 3:
+						break;
+
+					default:
+						puts("\nInvalid Choice. Please Try Again.");
+						break;
+				}
+			} while (choice2 < 1 || choice2 > 3);
+			break;
+
+		case 4:
+			do {
+				puts("\nWhich Field in WorkOrder Table would you like to Update?");
+				puts("1. Quoted Price");
+				puts("2. Work Details");
+				puts("3. Return to Main Menu");
+				printf("Enter your choice: ");
+				scanf("%d", &choice2);
+				getchar();
+
+				switch (choice2) {
+					case 1:
+						sql = "UPDATE WorkOrder SET PriceQuote = (?) WHERE WorkOrderID = (?);";
+						printf("Enter the Work Order ID to Update: ");
+						fgets(ID, 20, stdin);
+
+						while (!isdigit(*ID)) {
+							printf("Please Enter a Valid Work Order ID: ");
+							fgets(ID, 20, stdin);
+						}
+
+						printf("Enter the Price Quote: ");
+						fgets(field, 20, stdin);
+
+						while (!isdigit(*field)) {
+							printf("Please Enter a Valid Price Quote: ");
+							fgets(field, 20, stdin);
+						}
+
+						sqlite3_stmt *stmt7;
+						sqlite3_prepare_v2(db, sql, -1, &stmt7, NULL);
+						sqlite3_bind_text(stmt7, 1, field, -1, SQLITE_STATIC);
+						sqlite3_bind_text(stmt7, 2, ID, -1, SQLITE_STATIC);
+						*ErrMsg = sqlite3_step(stmt7);
+						(int)*ErrMsg;
+						if (*ErrMsg != SQLITE_OK && ((int)*ErrMsg) != SQLITE_DONE) {
+							printf("\nError Performing Operation.\n");
+						} else {
+							printf("\nQuoted Price Updated Successfully.\n");
+						}
+						*ErrMsg = (int)sqlite3_finalize(stmt7) * sizeof(int);
+						if (*ErrMsg != SQLITE_OK && ((int)*ErrMsg) != SQLITE_DONE) {
+							printf("\nError performing operation.\n");
+						} 
+						break;
+
+					case 2:
+						sql = "UPDATE WorkOrder SET WorkDetails = (?) WHERE WorkOrderID = (?);";
+						printf("Enter the Work Order ID to Update: ");
+						fgets(ID, 20, stdin);
+
+						while (!isdigit(*ID)) {
+							printf("Please Enter a Valid Work Order ID: ");
+							fgets(ID, 20, stdin);
+						}
+
+						printf("Enter Updated Work Details (max 225 characters): ");
+						fgets(field, 230, stdin);
+
+						sqlite3_stmt *stmt8;
+						sqlite3_prepare_v2(db, sql, -1, &stmt8, NULL);
+						sqlite3_bind_text(stmt8, 1, field, -1, SQLITE_STATIC);
+						sqlite3_bind_text(stmt8, 2, ID, -1, SQLITE_STATIC);
+						*ErrMsg = sqlite3_step(stmt8);
+						(int)*ErrMsg;
+						if (*ErrMsg != SQLITE_OK && ((int)*ErrMsg) != SQLITE_DONE) {
+							printf("\nError Performing Operation.\n");
+						} else {
+							printf("\nWork Details Updated Successfully.\n");
+						}
+						*ErrMsg = (int)sqlite3_finalize(stmt8) * sizeof(int);
+						if (*ErrMsg != SQLITE_OK && ((int)*ErrMsg) != SQLITE_DONE) {
+							printf("\nError performing operation.\n");
+						} 
+						break;
+					
+					case 3:
+						break;
+					
+					default:
+						puts("\nInvalid Choice. Please Try Again.");
+						break;
+				}
+			} while (choice2 < 1 || choice2 > 3);
+			break;
+
+		case 5:
+			do {
+				puts("\nWhich Field in the Vehicle Table would you like to Update?");
+				puts("1. Manufacturer");
+				puts("2. Model Year");
+				puts("3. Name");
+				puts("4. Trim level");
+				puts("5. Body Type");
+				puts("6. Color");
+				puts("7. Mileage");
+				puts("8. Assigned Salesman");
+				puts("9. CustomerID");
+				puts("10. MechanicID");
+				puts("11. Inventory Lot Number");
+				puts("12. Work Order Number");
+				puts("13. Return to Main Menu");
+
+				printf("Enter your choice: ");
+				scanf("%d", &choice2);
+				getchar();
+
+				switch(choice2) {
+					case 1:
+						sql = "UPDATE Vehicle SET Manufacturer = (?) WHERE VIN = (?);";
+						printf("Enter the VIN of the Vehicle to Update: ");
+						fgets(ID, 20, stdin);
+
+						while (!isdigit(*ID)) {
+							printf("Please Enter a Valid VIN: ");
+							fgets(ID, 20, stdin);
+						}
+
+						printf("Enter the Manufacturer: ");
+						fgets(field, 50, stdin);
+
+						sqlite3_stmt *stmt9;
+						sqlite3_prepare_v2(db, sql, -1, &stmt9, NULL);
+						sqlite3_bind_text(stmt9, 1, field, -1, SQLITE_STATIC);
+						sqlite3_bind_text(stmt9, 2, ID, -1, SQLITE_STATIC);
+						*ErrMsg = sqlite3_step(stmt9);
+						(int)*ErrMsg;
+						if (*ErrMsg != SQLITE_OK && ((int)*ErrMsg) != SQLITE_DONE) {
+							printf("\nError Performing Operation.\n");
+						} else {
+							printf("\nVehicle Manufacturer Updated Successfully.\n");
+						}
+						*ErrMsg = (int)sqlite3_finalize(stmt9) * sizeof(int);
+						if (*ErrMsg != SQLITE_OK && ((int)*ErrMsg) != SQLITE_DONE) {
+							printf("Error performing operation.\n");
+						} 
+						break;
+
+					case 2:
+						sql = "UPDATE Vehicle SET ModelYear = (?) WHERE VIN = (?);";
+						printf("Enter the VIN of the Vehicle to Update: ");
+						fgets(ID, 20, stdin);
+
+						while (!isdigit(*ID)) {
+							printf("Please Enter a Valid VIN: ");
+							fgets(ID, 20, stdin);
+						}
+
+						printf("Enter the Model Year: ");
+						fgets(field, 20, stdin);
+
+						while (!isdigit(*field)) {
+							printf("Please Enter a Model Year: ");
+							fgets(field, 20, stdin);
+						}
+
+						sqlite3_stmt *stmt10;
+						sqlite3_prepare_v2(db, sql, -1, &stmt10, NULL);
+						sqlite3_bind_text(stmt10, 1, field, -1, SQLITE_STATIC);
+						sqlite3_bind_text(stmt10, 2, ID, -1, SQLITE_STATIC);
+						*ErrMsg = sqlite3_step(stmt10);
+						(int)*ErrMsg;
+						if (*ErrMsg != SQLITE_OK && ((int)*ErrMsg) != SQLITE_DONE) {
+							printf("\nError Performing Operation.\n");
+						} else {
+							printf("\nVehicle Model Year Updated Successfully.\n");
+						}
+						*ErrMsg = (int)sqlite3_finalize(stmt10) * sizeof(int);
+						if (*ErrMsg != SQLITE_OK && ((int)*ErrMsg) != SQLITE_DONE) {
+							printf("Error performing operation.\n");
+						} 
+						break;
+					
+					case 3:
+						sql = "UPDATE Vehicle SET Name = (?) WHERE VIN = (?);";
+						printf("Enter the VIN of the Vehicle to Update: ");
+						fgets(ID, 20, stdin);
+
+						while (!isdigit(*ID)) {
+							printf("Please Enter a Valid VIN: ");
+							fgets(ID, 20, stdin);
+						}
+
+						printf("Enter the Vehicle Name: ");
+						fgets(field, 120, stdin);
+
+						sqlite3_stmt *stmt11;
+						sqlite3_prepare_v2(db, sql, -1, &stmt11, NULL);
+						sqlite3_bind_text(stmt11, 1, field, -1, SQLITE_STATIC);
+						sqlite3_bind_text(stmt11, 2, ID, -1, SQLITE_STATIC);
+						*ErrMsg = sqlite3_step(stmt11);
+						(int)*ErrMsg;
+						if (*ErrMsg != SQLITE_OK && ((int)*ErrMsg) != SQLITE_DONE) {
+							printf("\nError Performing Operation.\n");
+						} else {
+							printf("\nVehicle Name Updated Successfully.\n");
+						}
+						*ErrMsg = (int)sqlite3_finalize(stmt11) * sizeof(int);
+						if (*ErrMsg != SQLITE_OK && ((int)*ErrMsg) != SQLITE_DONE) {
+							printf("Error performing operation.\n");
+						} 
+						break;
+					
+					case 4:
+						sql = "UPDATE Vehicle SET TrimLevel = (?) WHERE VIN = (?);";
+						printf("Enter the VIN of the Vehicle to Update: ");
+						fgets(ID, 20, stdin);
+
+						while (!isdigit(*ID)) {
+							printf("Please Enter a Valid VIN: ");
+							fgets(ID, 20, stdin);
+						}
+
+						printf("Enter the Trim Level: ");
+						fgets(field, 35, stdin);
+
+						sqlite3_stmt *stmt12;
+						sqlite3_prepare_v2(db, sql, -1, &stmt12, NULL);
+						sqlite3_bind_text(stmt12, 1, field, -1, SQLITE_STATIC);
+						sqlite3_bind_text(stmt12, 2, ID, -1, SQLITE_STATIC);
+
+						*ErrMsg = sqlite3_step(stmt12);
+						(int)*ErrMsg;
+						if (*ErrMsg != SQLITE_OK && ((int)*ErrMsg) != SQLITE_DONE) {
+							printf("\nError Performing Operation.\n");
+						} else {
+							printf("\nVehicle Trim Level Updated Successfully.\n");
+						}
+						*ErrMsg = (int)sqlite3_finalize(stmt12) * sizeof(int);
+						if (*ErrMsg != SQLITE_OK && ((int)*ErrMsg) != SQLITE_DONE) {
+							printf("Error performing operation.\n");
+						} 
+						break;
+					
+					case 5:
+						sql = "UPDATE Vehicle SET BodyType = (?) WHERE VIN = (?);";
+						printf("Enter the VIN of the Vehicle to Update: ");
+						fgets(ID, 20, stdin);
+
+						while (!isdigit(*ID)) {
+							printf("Please Enter a Valid VIN: ");
+							fgets(ID, 20, stdin);
+						}
+
+						printf("Enter the Body Type: ");
+						fgets(field, 35, stdin);
+
+						sqlite3_stmt *stmt13;
+						sqlite3_prepare_v2(db, sql, -1, &stmt13, NULL);
+						sqlite3_bind_text(stmt13, 1, field, -1, SQLITE_STATIC);
+						sqlite3_bind_text(stmt13, 2, ID, -1, SQLITE_STATIC);
+						*ErrMsg = sqlite3_step(stmt13);
+						(int)*ErrMsg;
+						if (*ErrMsg != SQLITE_OK && ((int)*ErrMsg) != SQLITE_DONE) {
+							printf("\nError Performing Operation.\n");
+						} else {
+							printf("\nVehicle Body Type Updated Successfully.\n");
+						}
+						*ErrMsg = (int)sqlite3_finalize(stmt13) * sizeof(int);
+						if (*ErrMsg != SQLITE_OK && ((int)*ErrMsg) != SQLITE_DONE) {
+							printf("Error performing operation.\n");
+						} 
+						break;
+					
+					case 6:
+						sql = "UPDATE Vehicle SET Color = (?) WHERE VIN = (?);";
+						printf("Enter the VIN of the Vehicle to Update: ");
+						fgets(ID, 20, stdin);
+
+						while (!isdigit(*ID)) {
+							printf("Please Enter a Valid VIN: ");
+							fgets(ID, 20, stdin);
+						}
+
+						printf("Enter the Vehicle Color: ");
+						fgets(field, 35, stdin);
+
+						sqlite3_stmt *stmt14;
+						sqlite3_prepare_v2(db, sql, -1, &stmt14, NULL);
+						sqlite3_bind_text(stmt14, 1, field, -1, SQLITE_STATIC);
+						sqlite3_bind_text(stmt14, 2, ID, -1, SQLITE_STATIC);
+						*ErrMsg = sqlite3_step(stmt14);
+						(int)*ErrMsg;
+						if (*ErrMsg != SQLITE_OK && ((int)*ErrMsg) != SQLITE_DONE) {
+							printf("\nError Performing Operation.\n");
+						} else {
+							printf("\nVehicle Color Updated Successfully.\n");
+						}
+						*ErrMsg = (int)sqlite3_finalize(stmt14) * sizeof(int);
+						if (*ErrMsg != SQLITE_OK && ((int)*ErrMsg) != SQLITE_DONE) {
+							printf("Error performing operation.\n");
+						} 
+						break;
+
+					case 7:
+						sql = "UPDATE Vehicle SET Mileage = (?) WHERE VIN = (?);";
+						printf("Enter the VIN of the Vehicle to Update: ");
+						fgets(ID, 20, stdin);
+
+						while (!isdigit(*ID)) {
+							printf("Please Enter a Valid VIN: ");
+							fgets(ID, 20, stdin);
+						}
+
+						printf("Enter the Vehicle Mileage: ");
+						fgets(field, 35, stdin);
+
+						while (!isdigit(*field)) {
+							printf("Please Enter a Valid Mileage: ");
+							fgets(field, 35, stdin);
+						}
+
+						sqlite3_stmt *stmt15;
+						sqlite3_prepare_v2(db, sql, -1, &stmt15, NULL);
+						sqlite3_bind_text(stmt15, 1, field, -1, SQLITE_STATIC);
+						sqlite3_bind_text(stmt15, 2, ID, -1, SQLITE_STATIC);
+						*ErrMsg = sqlite3_step(stmt15);
+						(int)*ErrMsg;
+						if (*ErrMsg != SQLITE_OK && ((int)*ErrMsg) != SQLITE_DONE) {
+							printf("\nError Performing Operation.\n");
+						} else {
+							printf("\nVehicle Mileage Updated Successfully.\n");
+						}
+						*ErrMsg = (int)sqlite3_finalize(stmt15) * sizeof(int);
+						if (*ErrMsg != SQLITE_OK && ((int)*ErrMsg) != SQLITE_DONE) {
+							printf("Error performing operation.\n");
+						} 
+						break;
+
+					case 8: 
+						sql = "UPDATE Vehicle SET SalesmanID = (?) WHERE VIN = (?);";
+						printf("Enter the VIN of the Vehicle to Update: ");
+						fgets(ID, 20, stdin);
+
+						while (!isdigit(*ID)) {
+							printf("Please Enter a Valid VIN: ");
+							fgets(ID, 20, stdin);
+						}
+
+						printf("Enter the Assigned Salesman ID: ");
+						fgets(field, 20, stdin);
+
+						while (!isdigit(*field)) {
+							printf("Please Enter a Valid Salesman ID: ");
+							fgets(field, 20, stdin);
+						}
+
+						sqlite3_stmt *stmt16;
+						sqlite3_prepare_v2(db, sql, -1, &stmt16, NULL);
+						sqlite3_bind_text(stmt16, 1, field, -1, SQLITE_STATIC);
+						sqlite3_bind_text(stmt16, 2, ID, -1, SQLITE_STATIC);
+						*ErrMsg = sqlite3_step(stmt16);
+						(int)*ErrMsg;
+						if (*ErrMsg != SQLITE_OK && ((int)*ErrMsg) != SQLITE_DONE) {
+							printf("\nError Performing Operation.\n");
+						} else {
+							printf("\nVehicle Salesman ID Updated Successfully.\n");
+						}
+						*ErrMsg = (int)sqlite3_finalize(stmt16) * sizeof(int);
+						if (*ErrMsg != SQLITE_OK && ((int)*ErrMsg) != SQLITE_DONE) {
+							printf("Error performing operation.\n");
+						} 
+						break;
+
+					case 9:
+						sql = "UPDATE Vehicle SET CustomerID = ? WHERE VIN = (?);";
+						printf("Enter the VIN of the Vehicle to Update: ");
+						fgets(ID, 20, stdin);
+
+						while (!isdigit(*ID)) {
+							printf("Please Enter a Valid VIN: ");
+							fgets(ID, 20, stdin);
+						}
+
+						printf("Enter the Assigned Customer ID: ");
+						fgets(field, 20, stdin);
+
+						while (!isdigit(*field)) {
+							printf("Please Enter a Valid Customer ID: ");
+							fgets(field, 20, stdin);
+						}
+
+						sqlite3_stmt *stmt17;
+						sqlite3_prepare_v2(db, sql, -1, &stmt17, NULL);
+						sqlite3_bind_text(stmt17, 1, field, -1, SQLITE_STATIC);
+						sqlite3_bind_text(stmt17, 2, ID, -1, SQLITE_STATIC);
+						*ErrMsg = sqlite3_step(stmt17);
+						(int)*ErrMsg;
+
+						if (*ErrMsg != SQLITE_OK && ((int)*ErrMsg) != SQLITE_DONE) {
+							printf("\nError Performing Operation.\n");
+						} else {
+							printf("\nVehicle Customer ID Updated Successfully.\n");
+						}
+
+						*ErrMsg = (int)sqlite3_finalize(stmt17) * sizeof(int);
+
+						if (*ErrMsg != SQLITE_OK && ((int)*ErrMsg) != SQLITE_DONE) {
+							printf("Error performing operation.\n");
+						} 
+						break;
+
+					case 10:
+						sql = "UPDATE Vehicle SET MechanicID = (?) WHERE VIN = (?);";
+						printf("Enter the VIN of the Vehicle to Update: ");
+						fgets(ID, 20, stdin);
+
+						while (!isdigit(*ID)) {
+							printf("Please Enter a Valid VIN: ");
+							fgets(ID, 20, stdin);
+						}
+
+						printf("Enter the Assigned Mechanic ID: ");
+						fgets(field, 20, stdin);
+
+						while (!isdigit(*field)) {
+							printf("Please Enter a Valid Mechanic ID: ");
+							fgets(field, 20, stdin);
+						}
+
+						sqlite3_stmt *stmt18;
+						sqlite3_prepare_v2(db, sql, -1, &stmt18, NULL);
+						sqlite3_bind_text(stmt18, 1, field, -1, SQLITE_STATIC);
+						sqlite3_bind_text(stmt18, 2, ID, -1, SQLITE_STATIC);
+						*ErrMsg = sqlite3_step(stmt18);
+						(int)*ErrMsg;
+
+						if (*ErrMsg != SQLITE_OK && ((int)*ErrMsg) != SQLITE_DONE) {
+							printf("\nError Performing Operation.\n");
+						} else {
+							printf("\nVehicle Mechanic ID Updated Successfully.\n");
+						}
+
+						*ErrMsg = (int)sqlite3_finalize(stmt18) * sizeof(int);
+
+						if (*ErrMsg != SQLITE_OK && ((int)*ErrMsg) != SQLITE_DONE) {
+							printf("Error performing operation.\n");
+						} 
+						break;
+
+					case 11:
+						sql = "UPDATE Vehicle SET InventoryLotNumber = (?) WHERE VIN = (?);";
+						printf("Enter the VIN of the Vehicle to Update: ");
+						fgets(ID, 20, stdin);
+
+						while (!isdigit(*ID)) {
+							printf("Please Enter a Valid VIN: ");
+							fgets(ID, 20, stdin);
+						}
+
+						printf("Enter the Assigned Inventory Lot Number: ");
+						fgets(field, 20, stdin);
+
+						while (!isdigit(*field)) {
+							printf("Please Enter a Valid Inventory Lot Number: ");
+							fgets(field, 20, stdin);
+						}
+
+						sqlite3_stmt *stmt19;
+						sqlite3_prepare_v2(db, sql, -1, &stmt19, NULL);
+						sqlite3_bind_text(stmt19, 1, field, -1, SQLITE_STATIC);
+						sqlite3_bind_text(stmt19, 2, ID, -1, SQLITE_STATIC);
+						*ErrMsg = sqlite3_step(stmt19);
+						(int)*ErrMsg;
+						if (*ErrMsg != SQLITE_OK && ((int)*ErrMsg) != SQLITE_DONE) {
+							printf("\nError Performing Operation.\n");
+						} else {
+							printf("\nVehicle Inventory Lot Number Updated Successfully.\n");
+						}
+						*ErrMsg = (int)sqlite3_finalize(stmt19) * sizeof(int);
+						if (*ErrMsg != SQLITE_OK && ((int)*ErrMsg) != SQLITE_DONE) {
+							printf("Error performing operation.\n");
+						} 
+						break;
+
+					case 12: 
+						sql = "UPDATE Vehicle SET WorkOrderID = (?) WHERE VIN = (?);";
+						printf("Enter the VIN of the Vehicle to Update: ");
+						fgets(ID, 20, stdin);
+
+						while (!isdigit(*ID)) {
+							printf("Please Enter a Valid VIN: ");
+							fgets(ID, 20, stdin);
+						}
+
+						printf("Enter the Assigned Work Order ID: ");
+						fgets(field, 20, stdin);
+
+						while (!isdigit(*field)) {
+							printf("Please Enter a Valid Work Order ID: ");
+							fgets(field, 20, stdin);
+						}
+
+						sqlite3_stmt *stmt20;
+						sqlite3_prepare_v2(db, sql, -1, &stmt20, NULL);
+						sqlite3_bind_text(stmt20, 1, field, -1, SQLITE_STATIC);
+						sqlite3_bind_text(stmt20, 2, ID, -1, SQLITE_STATIC);
+						*ErrMsg = sqlite3_step(stmt20);
+						(int)*ErrMsg;
+						if (*ErrMsg != SQLITE_OK && ((int)*ErrMsg) != SQLITE_DONE) {
+							printf("\nError performing operation.\n");
+						} else {
+							printf("\nVehicle Work Order Updated Successfully.\n");
+						}
+						*ErrMsg = (int)sqlite3_finalize(stmt20) * sizeof(int);
+						if (*ErrMsg != SQLITE_OK && ((int)*ErrMsg) != SQLITE_DONE) {
+							printf("Error performing operation.\n");
+						} 
+						break;
+
+					case 13:
+						break;
+					
+					default:
+						printf("Invalid Selection. Please Try Again.\n");
+						break;
+				}
+			} while (choice2 < 1 || choice2 > 13);
+			break;
+
+		case 6:
+			break;
+
+		default:
+			printf("\nInvalid Choice. Please try again.\n");
+			break;
+		}
+	} while (choice < 1 || choice > 6);
+	free(ErrMsg);
+	free(ID);
+	free(field);
+	return;
 }
