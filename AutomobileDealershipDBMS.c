@@ -4,7 +4,6 @@
 #include <ctype.h>
 #include <sqlite3.h>
 
-static int DisplayDataCallback(void *data, int argc, char **argv, char **ColName);
 void AddNewVehicle(sqlite3* db);
 void AddNewLot(sqlite3* db);
 void AddNewCustomer(sqlite3* db);
@@ -13,13 +12,18 @@ void AddNewMechanic(sqlite3* db);
 void AddNewWorkOrder(sqlite3* db);
 void RemoveField(sqlite3* db);
 void UpdateField(sqlite3* db);
+void DisplayFields(sqlite3* db, char* sql);
+void CleanupData(char* string);
+static int DisplayDataCallback(void *data, int argc, char **argv, char **ColName);
 
 int main(int argc, char **argv) {
 	sqlite3 *db;
 	char *UserSelection = malloc(sizeof(char));
 	int *UserSelectionInt = malloc(sizeof(int));
 	char *ErrMsg = malloc(sizeof(char));
-	*ErrMsg = (int)sqlite3_open_v2("AutomobileDatabase.db", &db, SQLITE_OPEN_READWRITE, NULL) * sizeof(int);
+	char *ErrArg = malloc(sizeof(char));
+	char *sql = malloc(sizeof(char) * 50);
+	*ErrMsg = (int)sqlite3_open_v2("AutomobileDealership.db", &db, SQLITE_OPEN_READWRITE, NULL) * sizeof(int);
 
 	if (*ErrMsg != 0) {
 		printf("Error: Can't open database! %s\n", sqlite3_errmsg(db));
@@ -40,14 +44,12 @@ int main(int argc, char **argv) {
 		puts("6) Add a New Work Order");
 		puts("7) Delete a Field");
 		puts("8) Update a Field");
-		puts("");
-		puts("\n-- Display Operations --");
-		puts("8) Display All Vehicles");
-		puts("9) Display All Lots");
-		puts("10) Display All Customers");
-		puts("11) Display All Salesmen");
-		puts("12) Display All Mechanics");
-		puts("13) Display All Work Orders");
+		puts("9) Display All Vehicles");
+		puts("10) Display All Lots");
+		puts("11) Display All Customers");
+		puts("12) Display All Salesmen");
+		puts("13) Display All Mechanics");
+		puts("14) Display All Work Orders");
 		puts("");
 		puts("\n-- Quries/Insights --");
 
@@ -86,6 +88,38 @@ int main(int argc, char **argv) {
 	case 8:
 		UpdateField(db);
 		break;
+	case 9:
+		puts("\nRetrieved Data: \n");
+		*ErrMsg = sqlite3_exec(db, "SELECT * FROM Vehicle;", DisplayDataCallback, 0, &ErrArg);     
+		if(*ErrMsg != SQLITE_OK ){
+			printf("SQL error: %s\n", ErrMsg);     
+			sqlite3_free(ErrMsg); 
+		} 
+		break;
+	case 10:
+		sql = "SELECT * FROM Inventory;";
+		DisplayFields(db, sql);
+		break;
+	case 11:
+		puts("\nRetrieved Data: \n");
+		*ErrMsg = sqlite3_exec(db, "SELECT * FROM Customer;", DisplayDataCallback, 0, &ErrArg);     
+		if(*ErrMsg != SQLITE_OK ){
+			printf("SQL error: %s\n", ErrMsg);     
+			sqlite3_free(ErrMsg); 
+		}
+		break;
+	case 12:
+		sql = "SELECT * FROM Salesman;";
+		DisplayFields(db, sql);
+		break;
+	case 13:
+		sql = "SELECT * FROM Mechanic;";
+		DisplayFields(db, sql);
+		break;
+	case 14:
+		sql = "SELECT * FROM WorkOrder;";
+		DisplayFields(db, sql);
+		break;
 	case 0:
 		printf("\nThank you for using the Automobile Dealership DBMS. Goodbye!\n");
 		break;	
@@ -105,9 +139,9 @@ int main(int argc, char **argv) {
 static int DisplayDataCallback(void *data, int argc, char **argv, char **ColName) {
 	for(int i = 0; i<argc; i++) {       
 		printf("%s = %s\n", ColName[i], argv[i]);    
-	} 
+	}
 	printf("\n");
-
+	
 	return 0;
 }
 
@@ -133,45 +167,58 @@ void AddNewVehicle(sqlite3* db) {
 	puts("\n---- Add a New Vehicle ----\n");
 	printf("Enter the VIN: ");
 	fgets(VIN, 20, stdin);
+	CleanupData(VIN);
 	printf("Enter the Manufacturer: ");
 	fgets(Manufacturer, 20, stdin);
+	CleanupData(Manufacturer);
 	printf("Enter the Model Year: ");
 	fgets(ModelYear, 20, stdin);
+	CleanupData(ModelYear);
 	printf("Enter the Vehicle Name: ");
 	fgets(Name, 20, stdin);
+	CleanupData(Name);
 
 	printf("Optional field, Enter 0 if you don't have a Trim Level.\n");
 	printf("Enter the Trim Level: ");
 	fgets(TrimLevel, 20, stdin);
+	CleanupData(TrimLevel);
 
 
 	printf("Enter the Body Type: ");
 	fgets(BodyType, 20, stdin);
+	CleanupData(BodyType);
 	printf("Enter the Color: ");
 	fgets(Color, 20, stdin);
+	CleanupData(Color);
 	printf("Enter the Mileage: ");
 	fgets(Mileage, 20, stdin);
+	CleanupData(Mileage);
 
 	printf("Optional field, Enter 0 if the vehicle does not belong to a customer.\n");
 	printf("Enter the Customer ID: ");
 	fgets(CustomerID, 20, stdin);
+	CleanupData(CustomerID);
 
 	printf("Optional field, Enter 0 if the vehicle does not have an assigned mechanic.\n");
 	printf("Enter the Mechanic ID: ");
 	fgets(MechanicID, 20, stdin);
+	CleanupData(MechanicID);
 
 
 	printf("Optional field, Enter 0 if the vehicle is not in for work.\n");
 	printf("Enter the Work Order ID: ");
 	fgets(WorkOrderID, 20, stdin);
+	CleanupData(WorkOrderID);
 
 	printf("Optional field, Enter 0 if the vehicle does not belong to the dealership.\n");
 	printf("Enter the Inventory Lot Number: ");
 	fgets(InventoryLotNumber, 20, stdin);
+	CleanupData(InventoryLotNumber);
 	
 	printf("Optional field, Enter 0 if the vehicle does not have an assigned salesman.\n");
 	printf("Enter the Salesman ID: ");
 	fgets(SalesmanID, 20, stdin);
+	CleanupData(SalesmanID);
 	
 	//prepare the statement
 	sqlite3_stmt *stmt;
@@ -264,6 +311,7 @@ void AddNewLot(sqlite3* db) {
 		printf("Please Enter a Number: ");
 		fgets(NumVehicles, 20, stdin);
 	}
+	CleanupData(NumVehicles);
 
 	sqlite3_stmt *stmt;
 	sqlite3_prepare_v2(db, sql, -1, &stmt, NULL);
@@ -295,6 +343,8 @@ void AddNewCustomer(sqlite3* db) {
 	puts("\n---- Add a New Customer ----\n");
 	printf("Enter the Customer's Name: ");
 	fgets(Name, 50, stdin);
+	CleanupData(Name);
+
 	printf("Enter the Customer's Phone Number: ");
 	fgets(PhoneNumber, 20, stdin);
 	//loop if user doesn't enter a number
@@ -302,6 +352,7 @@ void AddNewCustomer(sqlite3* db) {
 		printf("Please Enter a Valid Phone Number: ");
 		fgets(PhoneNumber, 20, stdin);
 	}
+	CleanupData(PhoneNumber);
 	printf("Enter the Salesman ID: ");
 	fgets(Salesman, 20, stdin);
 	//loop if user doesn't enter a number
@@ -309,6 +360,7 @@ void AddNewCustomer(sqlite3* db) {
 		printf("Please Enter a Valid Salesman ID: ");
 		fgets(Salesman, 20, stdin);
 	}
+	CleanupData(Salesman);
 
 	sqlite3_stmt *stmt;
 	sqlite3_prepare_v2(db, sql, -1, &stmt, NULL);
@@ -342,6 +394,7 @@ void AddNewSalesman(sqlite3* db) {
 	puts("\n---- Add a New Salesman ----\n");
 	printf("Enter the Salesman's Name: ");
 	fgets(SalesmanName, 50, stdin);
+	CleanupData(SalesmanName);
 
 	sqlite3_stmt *stmt;
 	sqlite3_prepare_v2(db, sql, -1, &stmt, NULL);
@@ -373,6 +426,7 @@ void AddNewMechanic(sqlite3* db) {
 	puts("\n---- Add a New Mechanic ----\n");
 	printf("Enter the Mechanic's Name: ");
 	fgets(MechanicName, 50, stdin);
+	CleanupData(MechanicName);
 	printf("Enter 0 if the mechanic has no work assigned.\n");
 	printf("Enter the Assigned Work ID: ");
 	fgets(AssignedWork, 20, stdin);
@@ -381,6 +435,7 @@ void AddNewMechanic(sqlite3* db) {
 		printf("Please Enter a Valid Work ID: ");
 		fgets(AssignedWork, 20, stdin);
 	}
+	CleanupData(AssignedWork);
 
 	sqlite3_stmt *stmt;
 	sqlite3_prepare_v2(db, sql, -1, &stmt, NULL);
@@ -425,9 +480,12 @@ void AddNewWorkOrder(sqlite3* db) {
 		printf("Please Enter a Valid Price: ");
 		fgets(PriceQuote, 20, stdin);
 	}
+	CleanupData(PriceQuote);
+
 	printf("Optional field, Enter 0 if there are no Work Details.\n");
 	printf("Enter the Work Details (Max 220 Characters): ");
 	fgets(WorkDetails, 225, stdin);
+	CleanupData(WorkDetails);
 
 	sqlite3_stmt *stmt;
 	sqlite3_prepare_v2(db, sql, -1, &stmt, NULL);
@@ -656,9 +714,9 @@ void UpdateField(sqlite3* db) {
 							printf("Please Enter a Valid Customer ID: ");
 							fgets(ID, 20, stdin);
 						}
-
 						printf("Enter the New Name: ");
 						fgets(field, 20, stdin);
+						CleanupData(field);
 
 						sqlite3_stmt *stmt1;
 						sqlite3_prepare_v2(db, sql, -1, &stmt1, NULL);
@@ -688,6 +746,7 @@ void UpdateField(sqlite3* db) {
 
 						printf("Enter the New Phone Number: ");
 						fgets(field, 20, stdin);
+						CleanupData(field);
 
 						sqlite3_stmt *stmt2;
 						sqlite3_prepare_v2(db, sql, -1, &stmt2, NULL);
@@ -717,6 +776,7 @@ void UpdateField(sqlite3* db) {
 
 						printf("Enter the New Assigned SalesmanID: ");
 						fgets(field, 20, stdin);
+						CleanupData(field);
 
 						while (!isdigit(*field)) {
 							printf("Please Enter a Valid Salesman ID: ");
@@ -760,6 +820,7 @@ void UpdateField(sqlite3* db) {
 
 			printf("Enter the New Salesman Name: ");
 			fgets(field, 20, stdin);
+			CleanupData(field);
 
 			sqlite3_stmt *stmt4;
 			sqlite3_prepare_v2(db, sql, -1, &stmt4, NULL);
@@ -801,6 +862,7 @@ void UpdateField(sqlite3* db) {
 
 						printf("Enter the New Mechanic Name: ");
 						fgets(field, 20, stdin);
+						CleanupData(field);
 
 						sqlite3_stmt *stmt5;
 						sqlite3_prepare_v2(db, sql, -1, &stmt5, NULL);
@@ -831,6 +893,7 @@ void UpdateField(sqlite3* db) {
 
 						printf("Enter the New Assigned Work: ");
 						fgets(field, 20, stdin);
+						CleanupData(field);
 
 						while (!isdigit(*field)) {
 							printf("Please Enter a Valid Work ID: ");
@@ -887,6 +950,7 @@ void UpdateField(sqlite3* db) {
 
 						printf("Enter the Price Quote: ");
 						fgets(field, 20, stdin);
+						CleanupData(field);
 
 						while (!isdigit(*field)) {
 							printf("Please Enter a Valid Price Quote: ");
@@ -922,6 +986,7 @@ void UpdateField(sqlite3* db) {
 
 						printf("Enter Updated Work Details (max 225 characters): ");
 						fgets(field, 230, stdin);
+						CleanupData(field);
 
 						sqlite3_stmt *stmt8;
 						sqlite3_prepare_v2(db, sql, -1, &stmt8, NULL);
@@ -984,6 +1049,7 @@ void UpdateField(sqlite3* db) {
 
 						printf("Enter the Manufacturer: ");
 						fgets(field, 50, stdin);
+						CleanupData(field);
 
 						sqlite3_stmt *stmt9;
 						sqlite3_prepare_v2(db, sql, -1, &stmt9, NULL);
@@ -1019,6 +1085,7 @@ void UpdateField(sqlite3* db) {
 							printf("Please Enter a Model Year: ");
 							fgets(field, 20, stdin);
 						}
+						CleanupData(field);
 
 						sqlite3_stmt *stmt10;
 						sqlite3_prepare_v2(db, sql, -1, &stmt10, NULL);
@@ -1049,6 +1116,7 @@ void UpdateField(sqlite3* db) {
 
 						printf("Enter the Vehicle Name: ");
 						fgets(field, 120, stdin);
+						CleanupData(field);
 
 						sqlite3_stmt *stmt11;
 						sqlite3_prepare_v2(db, sql, -1, &stmt11, NULL);
@@ -1079,6 +1147,7 @@ void UpdateField(sqlite3* db) {
 
 						printf("Enter the Trim Level: ");
 						fgets(field, 35, stdin);
+						CleanupData(field);
 
 						sqlite3_stmt *stmt12;
 						sqlite3_prepare_v2(db, sql, -1, &stmt12, NULL);
@@ -1110,6 +1179,7 @@ void UpdateField(sqlite3* db) {
 
 						printf("Enter the Body Type: ");
 						fgets(field, 35, stdin);
+						CleanupData(field);
 
 						sqlite3_stmt *stmt13;
 						sqlite3_prepare_v2(db, sql, -1, &stmt13, NULL);
@@ -1140,6 +1210,7 @@ void UpdateField(sqlite3* db) {
 
 						printf("Enter the Vehicle Color: ");
 						fgets(field, 35, stdin);
+						CleanupData(field);
 
 						sqlite3_stmt *stmt14;
 						sqlite3_prepare_v2(db, sql, -1, &stmt14, NULL);
@@ -1170,6 +1241,7 @@ void UpdateField(sqlite3* db) {
 
 						printf("Enter the Vehicle Mileage: ");
 						fgets(field, 35, stdin);
+						CleanupData(field);
 
 						while (!isdigit(*field)) {
 							printf("Please Enter a Valid Mileage: ");
@@ -1210,6 +1282,7 @@ void UpdateField(sqlite3* db) {
 							printf("Please Enter a Valid Salesman ID: ");
 							fgets(field, 20, stdin);
 						}
+						CleanupData(field);
 
 						sqlite3_stmt *stmt16;
 						sqlite3_prepare_v2(db, sql, -1, &stmt16, NULL);
@@ -1245,6 +1318,7 @@ void UpdateField(sqlite3* db) {
 							printf("Please Enter a Valid Customer ID: ");
 							fgets(field, 20, stdin);
 						}
+						CleanupData(field);
 
 						sqlite3_stmt *stmt17;
 						sqlite3_prepare_v2(db, sql, -1, &stmt17, NULL);
@@ -1283,6 +1357,7 @@ void UpdateField(sqlite3* db) {
 							printf("Please Enter a Valid Mechanic ID: ");
 							fgets(field, 20, stdin);
 						}
+						CleanupData(field);
 
 						sqlite3_stmt *stmt18;
 						sqlite3_prepare_v2(db, sql, -1, &stmt18, NULL);
@@ -1321,6 +1396,7 @@ void UpdateField(sqlite3* db) {
 							printf("Please Enter a Valid Inventory Lot Number: ");
 							fgets(field, 20, stdin);
 						}
+						CleanupData(field);
 
 						sqlite3_stmt *stmt19;
 						sqlite3_prepare_v2(db, sql, -1, &stmt19, NULL);
@@ -1356,6 +1432,7 @@ void UpdateField(sqlite3* db) {
 							printf("Please Enter a Valid Work Order ID: ");
 							fgets(field, 20, stdin);
 						}
+						CleanupData(field);
 
 						sqlite3_stmt *stmt20;
 						sqlite3_prepare_v2(db, sql, -1, &stmt20, NULL);
@@ -1396,4 +1473,38 @@ void UpdateField(sqlite3* db) {
 	free(ID);
 	free(field);
 	return;
+}
+
+void DisplayFields(sqlite3* db, char* sql) {
+	sqlite3_stmt *stmt;
+	sqlite3_prepare_v2(db, sql, -1, &stmt, NULL);
+	int col = sqlite3_column_count(stmt);
+	int result = 0;
+	puts("\nRetrieved Data: \n");
+	for (int i = 0; i < col; i++) {
+		printf("%s\t\t", sqlite3_column_name(stmt, i));
+	}
+	printf("\n");
+	while (1) {
+		result = sqlite3_step(stmt);
+		if (result == SQLITE_ROW) {
+			for (int i = 0; i < col; i++) {
+				printf("%s\t\t\t", sqlite3_column_text(stmt, i));
+			}
+			printf("\n");
+		}
+		else {
+			break;
+		}
+	}
+	sqlite3_finalize(stmt);
+	return;
+}
+
+void CleanupData(char* string) {
+	for (int i = 0; i < strlen(string); i++) {
+		if (string[i] == '\r' || string[i] == '\n') {
+			string[i] = '\0';
+		}
+	}
 }
