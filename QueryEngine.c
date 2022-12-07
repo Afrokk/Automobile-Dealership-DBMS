@@ -4,10 +4,10 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "QueryEngine.h"
 #include "CRUDFunctions.h"
+#include "QueryEngine.h"
 
-void QueryEngine(sqlite3 *db) {
+void QueryRunner(sqlite3 *db) {
   char *ErrMsg = malloc(sizeof(char));
   char *ErrArg = malloc(sizeof(char));
   char *sql = malloc(sizeof(char) * 100);
@@ -30,6 +30,8 @@ void QueryEngine(sqlite3 *db) {
     puts("10. Display Total Number of Vehicles in the Shop.");
     puts("11. List Number of Vehicles in the Dealership.");
     puts("12. Display Cars Waiting for Work.");
+    puts("");
+    puts("13. Run a Custom SQL Query:");
     puts("0. Return to Main Menu");
     printf("\nEnter your choice: ");
     scanf("%d", &choice);
@@ -222,8 +224,37 @@ void QueryEngine(sqlite3 *db) {
         }
         break;
 
+      case 13:
+        QueryEngine(db);
+        break;
       default:
-        printf("\nPlease Enter a Valid Choice: \n");
+        printf("\nPlease Enter a Valid Choice.\n");
     }
   } while (choice != 0);
+  free(ErrArg);
+  free(ErrMsg);
+  free(field);
+  return;
+}
+
+void QueryEngine(sqlite3 *db) {
+  char *sql = malloc(sizeof(char) * 150);
+  char *field = malloc(sizeof(char) * 150);
+  char *ErrArg = malloc(sizeof(char) * 50);
+  char *ErrMsg = malloc(sizeof(char) * 50);
+  printf("Enter an SQL Query to Exectute: \n");
+  fgets(field, 50, stdin);
+  field[strlen(field) - 1] = '\0';
+  sql = field;
+
+  *ErrMsg = sqlite3_exec(db, sql, DisplayDataCallback, 0, &ErrArg);
+
+  if (*ErrMsg != SQLITE_OK) {
+    printf("SQL error: %s\n", ErrArg);
+    sqlite3_free(ErrArg);
+  }
+  free(field);
+  free(ErrArg);
+  free(ErrMsg);
+  return;
 }

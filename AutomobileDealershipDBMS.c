@@ -5,8 +5,7 @@
 #include <string.h>
 
 #include "CRUDFunctions.h"
-
-void QueryEngine(sqlite3 *db);
+#include "QueryEngine.h"
 
 int main(int argc, char **argv) {
   sqlite3 *db;
@@ -15,12 +14,12 @@ int main(int argc, char **argv) {
   char *ErrMsg = malloc(sizeof(char));
   char *ErrArg = malloc(sizeof(char));
   char *sql = malloc(sizeof(char) * 50);
-  *ErrMsg = (int)sqlite3_open_v2("AutomobileDealership.db", &db,
+  *ErrMsg = (int)sqlite3_open_v2("AutomobileDatabase.db", &db,
                                  SQLITE_OPEN_READWRITE, NULL) *
             sizeof(int);
 
   if (*ErrMsg != 0) {
-    printf("Error: Can't open database! %s\n", sqlite3_errmsg(db));
+    printf("Error: Can't open database: %s\n", sqlite3_errmsg(db));
     return 1;
   } else {
     printf("Connected to the database successfully.\n");
@@ -31,12 +30,14 @@ int main(int argc, char **argv) {
     puts("\n-- CRUD Operations --");
     puts("1) Add a New Vehicle");
     puts("2) Add a New Lot in the Inventory");
-    puts("3) Enter a New Customer");
-    puts("4) Enter a New Salesman");
-    puts("5) Enter a New Mechanic");
+    puts("3) Add a New Customer");
+    puts("4) Add a New Salesman");
+    puts("5) Add a New Mechanic");
     puts("6) Add a New Work Order");
+    puts("");
     puts("7) Delete a Field");
     puts("8) Update a Field");
+    puts("");
     puts("9) Display All Vehicles");
     puts("10) Display All Lots");
     puts("11) Display All Customers");
@@ -44,7 +45,7 @@ int main(int argc, char **argv) {
     puts("13) Display All Mechanics");
     puts("14) Display All Work Orders");
     puts("");
-    puts("\n-- Queries --");
+    puts("-- Queries --");
     puts("15) Run a Query");
     puts("Press 0 to Exit.\n");
     printf("Please Choose an Option from the Menu: ");
@@ -116,7 +117,7 @@ int main(int argc, char **argv) {
         DisplayFields(db, sql);
         break;
       case 15:
-        QueryEngine(db);
+        QueryRunner(db);
       case 0:
         printf(
             "\nThank you for using the Automobile Dealership DBMS. Goodbye!\n");
@@ -129,6 +130,8 @@ int main(int argc, char **argv) {
 
   sqlite3_close(db);
   free(UserSelection);
+  free(UserSelectionInt);
   free(ErrMsg);
+  free(ErrArg);
   return 0;
 }
