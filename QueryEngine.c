@@ -38,6 +38,8 @@ void QueryRunner(sqlite3 *db) {
     getchar();
 
     switch (choice) {
+      case 0:
+        break;
       case 1:
         sql =
             "SELECT ModelYear, Manufacturer, Name, TrimLevel, BodyType,\

@@ -121,6 +121,7 @@ int main(int argc, char **argv) {
         break;
       case 15:
         QueryRunner(db);
+        break;
       case 0:
         printf(
             "\nThank you for using the Automobile Dealership DBMS. Goodbye!\n");
