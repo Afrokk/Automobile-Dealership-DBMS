@@ -328,7 +328,6 @@ void AddNewMechanic(sqlite3 *db) {
 
   *ErrMsg = sqlite3_step(stmt);
   (int)*ErrMsg;
-  printf("%s", ErrMsg);
   if (*ErrMsg != SQLITE_OK && ((int)*ErrMsg) != SQLITE_DONE) {
     printf("\nError Performing Operation.\n");
   } else {

@@ -6,6 +6,8 @@
 
 #include "CRUDFunctions.h"
 
+void QueryEngine(sqlite3 *db);
+
 int main(int argc, char **argv) {
   sqlite3 *db;
   char *UserSelection = malloc(sizeof(char));
@@ -14,7 +16,8 @@ int main(int argc, char **argv) {
   char *ErrArg = malloc(sizeof(char));
   char *sql = malloc(sizeof(char) * 50);
   *ErrMsg = (int)sqlite3_open_v2("AutomobileDealership.db", &db,
-  SQLITE_OPEN_READWRITE, NULL) * sizeof(int);
+                                 SQLITE_OPEN_READWRITE, NULL) *
+            sizeof(int);
 
   if (*ErrMsg != 0) {
     printf("Error: Can't open database! %s\n", sqlite3_errmsg(db));
@@ -41,8 +44,8 @@ int main(int argc, char **argv) {
     puts("13) Display All Mechanics");
     puts("14) Display All Work Orders");
     puts("");
-    puts("\n-- Quries/Insights --");
-
+    puts("\n-- Queries --");
+    puts("15) Run a Query");
     puts("Press 0 to Exit.\n");
     printf("Please Choose an Option from the Menu: ");
     fgets(UserSelection, 20, stdin);
@@ -81,7 +84,7 @@ int main(int argc, char **argv) {
       case 9:
         puts("\nRetrieved Data: \n");
         *ErrMsg = sqlite3_exec(db, "SELECT * FROM Vehicle;",
-        DisplayDataCallback, 0, &ErrArg);
+                               DisplayDataCallback, 0, &ErrArg);
         if (*ErrMsg != SQLITE_OK) {
           printf("SQL error: %s\n", ErrMsg);
           sqlite3_free(ErrMsg);
@@ -94,7 +97,7 @@ int main(int argc, char **argv) {
       case 11:
         puts("\nRetrieved Data: \n");
         *ErrMsg = sqlite3_exec(db, "SELECT * FROM Customer;",
-        DisplayDataCallback, 0, &ErrArg);
+                               DisplayDataCallback, 0, &ErrArg);
         if (*ErrMsg != SQLITE_OK) {
           printf("SQL error: %s\n", ErrMsg);
           sqlite3_free(ErrMsg);
@@ -112,6 +115,8 @@ int main(int argc, char **argv) {
         sql = "SELECT * FROM WorkOrder;";
         DisplayFields(db, sql);
         break;
+      case 15:
+        QueryEngine(db);
       case 0:
         printf(
             "\nThank you for using the Automobile Dealership DBMS. Goodbye!\n");
