@@ -14,6 +14,9 @@ int main(int argc, char **argv) {
   char *ErrMsg = malloc(sizeof(char));
   char *ErrArg = malloc(sizeof(char));
   char *sql = malloc(sizeof(char) * 50);
+  
+  //CHANGE DATABASE FILE NAME HERE, IF NEEDED
+  //RUN SampleAutomobileDatabase.db to Test with Sample Data
   *ErrMsg = (int)sqlite3_open_v2("AutomobileDatabase.db", &db,
                                  SQLITE_OPEN_READWRITE, NULL) *
             sizeof(int);

@@ -26,9 +26,9 @@ void QueryRunner(sqlite3 *db) {
     puts(
         "8. Display Workshop Customers, their Vehicle Details and Quoted "
         "Price.");
-    puts("9. Display Average Mileage of Vehicles in the Shop.");
-    puts("10. Display Total Number of Vehicles in the Shop.");
-    puts("11. List Number of Vehicles in the Dealership.");
+    puts("9. Display Average Mileage of Vehicles in the Dealership.");
+    puts("10. Display Total Number of Vehicles in the Dealership.");
+    puts("11. Display Total Number of Vehicles in the Shop by Body Type.");
     puts("12. Display Cars Waiting for Work.");
     puts("");
     puts("13. Run a Custom SQL Query:");
@@ -41,7 +41,7 @@ void QueryRunner(sqlite3 *db) {
       case 1:
         sql =
             "SELECT ModelYear, Manufacturer, Name, TrimLevel, BodyType,\
-        Color FROM Vehicle WHERE BodyType = (?);";
+				Color FROM Vehicle WHERE BodyType = (?);";
         printf("Enter the Body Type: ");
         fgets(field, 50, stdin);
         field[strlen(field) - 1] = '\0';
@@ -74,7 +74,7 @@ void QueryRunner(sqlite3 *db) {
       case 2:
         sql =
             "SELECT Manufacturer, COUNT(*) AS NumVehicles FROM Vehicle\
-            GROUP BY Manufacturer;";
+						GROUP BY Manufacturer;";
 
         *ErrMsg = sqlite3_exec(db, sql, DisplayDataCallback, 0, &ErrArg);
 
@@ -87,8 +87,8 @@ void QueryRunner(sqlite3 *db) {
       case 3:
         sql =
             "SELECT ModelYear, Manufacturer, Name, WorkDetails FROM\
-            Vehicle, WorkOrder WHERE Vehicle.WorkOrderID =\
-            WorkOrder.WorkOrderID;";
+						Vehicle, WorkOrder WHERE Vehicle.WorkOrderID =\
+						WorkOrder.WorkOrderID;";
 
         *ErrMsg = sqlite3_exec(db, sql, DisplayDataCallback, 0, &ErrArg);
 
@@ -101,7 +101,7 @@ void QueryRunner(sqlite3 *db) {
       case 4:
         sql =
             "SELECT MechanicName, WorkDetails FROM Mechanic, WorkOrder\
-        WHERE Mechanic.AssignedWork = WorkOrder.WorkOrderID;";
+				WHERE Mechanic.AssignedWork = WorkOrder.WorkOrderID;";
 
         *ErrMsg = sqlite3_exec(db, sql, DisplayDataCallback, 0, &ErrArg);
 
@@ -114,8 +114,8 @@ void QueryRunner(sqlite3 *db) {
       case 5:
         sql =
             "SELECT MechanicName, ModelYear, Manufacturer, Name\
-        FROM Mechanic, Vehicle WHERE Mechanic.MechanicID =\
-        Vehicle.MechanicID;";
+				FROM Mechanic, Vehicle WHERE Mechanic.MechanicID =\
+				Vehicle.MechanicID;";
 
         *ErrMsg = sqlite3_exec(db, sql, DisplayDataCallback, 0, &ErrArg);
 
@@ -141,9 +141,9 @@ void QueryRunner(sqlite3 *db) {
       case 7:
         sql =
             "SELECT Customer.Name AS CustomerName, Vehicle.ModelYear,\
-        Vehicle.Manufacturer, Vehicle.Name AS VehicleName FROM\
-        Customer, Vehicle WHERE\
-        Customer.CustomerID = Vehicle.CustomerID;";
+				Vehicle.Manufacturer, Vehicle.Name AS VehicleName FROM\
+				Customer, Vehicle WHERE\
+				Customer.CustomerID = Vehicle.CustomerID;";
 
         *ErrMsg = sqlite3_exec(db, sql, DisplayDataCallback, 0, &ErrArg);
 
@@ -156,10 +156,10 @@ void QueryRunner(sqlite3 *db) {
       case 8:
         sql =
             "SELECT Customer.Name AS CustomerName, Vehicle.ModelYear,\
-        Vehicle.Manufacturer, Vehicle.Name AS VehicleName,\
-        WorkDetails, PriceQuote FROM Customer, Vehicle,\
-        WorkOrder WHERE Customer.CustomerID = Vehicle.CustomerID\
-        AND Vehicle.WorkOrderID = WorkOrder.WorkOrderID;";
+				Vehicle.Manufacturer, Vehicle.Name AS VehicleName,\
+				WorkDetails, PriceQuote FROM Customer, Vehicle,\
+				WorkOrder WHERE Customer.CustomerID = Vehicle.CustomerID\
+				AND Vehicle.WorkOrderID = WorkOrder.WorkOrderID;";
 
         *ErrMsg = sqlite3_exec(db, sql, DisplayDataCallback, 0, &ErrArg);
 
@@ -172,9 +172,9 @@ void QueryRunner(sqlite3 *db) {
       case 9:
         sql =
             "SELECT AVG(Mileage) AS 'Average Mileage', COUNT(*) AS\
-        'Total Vehicles in for Service', SUM(PriceQuote) AS\
-        'Total PriceQuote ($)' FROM Vehicle, WorkOrder WHERE\
-        Vehicle.WorkOrderID = WorkOrder.WorkOrderID;";
+				'Total Vehicles in for Service', SUM(PriceQuote) AS\
+				'Total PriceQuote ($)' FROM Vehicle, WorkOrder WHERE\
+				Vehicle.WorkOrderID = WorkOrder.WorkOrderID;";
 
         *ErrMsg = sqlite3_exec(db, sql, DisplayDataCallback, 0, &ErrArg);
 
@@ -185,7 +185,7 @@ void QueryRunner(sqlite3 *db) {
         break;
 
       case 10:
-        sql = "SELECT COUNT(*) AS 'Total Vehicles in Shop' FROM Vehicle;";
+        sql = "SELECT COUNT(*) AS 'Total Vehicles in Dealership' FROM Vehicle;";
         *ErrMsg = sqlite3_exec(db, sql, DisplayDataCallback, 0, &ErrArg);
 
         if (*ErrMsg != SQLITE_OK) {
@@ -196,8 +196,8 @@ void QueryRunner(sqlite3 *db) {
 
       case 11:
         sql =
-            "SELECT SUM(NumVehicles) AS 'Total Vehicles in Inventory'\
-        FROM Inventory;";
+            "SELECT BodyType, COUNT(*) AS 'Vehicles in Dealership'\
+				FROM Vehicle GROUP BY BodyType;";
         *ErrMsg = sqlite3_exec(db, sql, DisplayDataCallback, 0, &ErrArg);
 
         if (*ErrMsg != SQLITE_OK) {
@@ -209,10 +209,10 @@ void QueryRunner(sqlite3 *db) {
       case 12:
         sql =
             "SELECT ModelYear, Manufacturer, Name, WorkDetails,\
-        group_concat(MechanicName) AS FreeMechanics FROM Vehicle,\
-        WorkOrder, Mechanic WHERE Vehicle.WorkOrderID =\
-        WorkOrder.WorkOrderID AND Vehicle.MechanicID IS NULL\
-        AND Mechanic.AssignedWork IS NULL;";
+				group_concat(MechanicName) AS FreeMechanics FROM Vehicle,\
+				WorkOrder, Mechanic WHERE Vehicle.WorkOrderID =\
+				WorkOrder.WorkOrderID AND Vehicle.MechanicID IS NULL\
+				AND Mechanic.AssignedWork IS NULL;";
 
         printf("\nVehicles Waiting for Work: \n\n");
 
