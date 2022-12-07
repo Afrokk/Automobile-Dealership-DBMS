@@ -1,0 +1,62 @@
+BEGIN TRANSACTION;
+CREATE TABLE IF NOT EXISTS "Inventory" (
+	"LotNumber"	INTEGER NOT NULL,
+	"NumVehicles"	INTEGER NOT NULL,
+	CONSTRAINT UK_LotNumber UNIQUE(LotNumber)
+	PRIMARY KEY("LotNumber" AUTOINCREMENT)
+);
+CREATE TABLE IF NOT EXISTS "Customer" (
+	"CustomerID"	INTEGER NOT NULL,
+	"Name"	VARCHAR(255) NOT NULL,
+	"PhoneNumber"	INTEGER NOT NULL,
+	"Salesman"	VARCHAR(255) NOT NULL,
+	CONSTRAINT UK_CustomerID UNIQUE(CustomerID)
+	CONSTRAINT UK_Name UNIQUE(Name)
+	CONSTRAINT UK_PhoneNumber UNIQUE(PhoneNumber)
+	CONSTRAINT FK_Customer_Salesman_2_Salesman_SalesmanID FOREIGN KEY("Salesman") REFERENCES "Salesman"("SalesmanID"),
+	PRIMARY KEY("CustomerID" AUTOINCREMENT)
+);
+CREATE TABLE IF NOT EXISTS "WorkOrder" (
+	"WorkOrderID"	INTEGER NOT NULL,
+	"PriceQuote"	NUMERIC NOT NULL,
+	"WorkDetails"	TEXT DEFAULT NULL,
+	CONSTRAINT UK_WorkOrderID UNIQUE(WorkOrderID)
+	PRIMARY KEY("WorkOrderID" AUTOINCREMENT)
+);
+CREATE TABLE IF NOT EXISTS "Mechanic" (
+	"MechanicID"	INTEGER NOT NULL,
+	"MechanicName"	VARCHAR(255) NOT NULL,
+	"AssignedWork"	INTEGER DEFAULT NULL,
+	CONSTRAINT UK_MechanicID UNIQUE(MechanicID)
+	CONSTRAINT FK_Mechanic_AssignedWork_2_WorkOrder_WorkOrderID FOREIGN KEY("AssignedWork") REFERENCES "WorkOrder"("WorkOrderID"),
+	PRIMARY KEY("MechanicID")
+);
+CREATE TABLE IF NOT EXISTS "Salesman" (
+	"SalesmanID"	INTEGER NOT NULL,
+	"SalesmanName"	VARCHAR(255) NOT NULL,
+	CONSTRAINT UK_SalesmanID UNIQUE(SalesmanID)
+	PRIMARY KEY("SalesmanID" AUTOINCREMENT)
+);
+CREATE TABLE IF NOT EXISTS "Vehicle" (
+	"VIN"	INTEGER NOT NULL,
+	"Manufacturer"	VARCHAR(255) NOT NULL,
+	"ModelYear"	INTEGER NOT NULL,
+	"Name"	VARCHAR(255) NOT NULL,
+	"TrimLevel"	VARCHAR(255) DEFAULT NULL,
+	"BodyType"	VARCHAR(255) NOT NULL,
+	"Color"	VARCHAR(255) NOT NULL,
+	"Mileage"	NUMERIC NOT NULL,
+	"SalesmanID"	INTEGER DEFAULT NULL,
+	"CustomerID"	INTEGER DEFAULT NULL,
+	"InventoryLotNumber"	INTEGER DEFAULT NULL,
+	"MechanicID"	INTEGER DEFAULT NULL,
+	"WorkOrderID"	INTEGER DEFAULT NULL,
+	CONSTRAINT UK_VIN UNIQUE(VIN)
+	CONSTRAINT FK_Vehicle_MechanicID_2_Mechanic_MechanicID FOREIGN KEY("MechanicID") REFERENCES "Mechanic"("MechanicID"),
+	CONSTRAINT FK_Vehicle_InventoryLotNumber_2_Inventory_LotNumber FOREIGN KEY("InventoryLotNumber") REFERENCES "Inventory"("LotNumber"),
+	CONSTRAINT FK_Vehicle_WorkOrderID_2_WorkOrderID_WorkOrderID FOREIGN KEY("WorkOrderID") REFERENCES "WorkOrderID"("WorkOrderID"),
+	CONSTRAINT FK_Vehicle_CustomerID_2_Customer_CustomerID FOREIGN KEY("CustomerID") REFERENCES "Customer"("CustomerID"),
+	CONSTRAINT FK_Vehicle_SalesmanID_2_Salesman_SalesmanID FOREIGN KEY("SalesmanID") REFERENCES "Salesman"("SalesmanID"),
+	PRIMARY KEY("VIN")
+);
+COMMIT;
