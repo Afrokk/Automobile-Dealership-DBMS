@@ -87,7 +87,7 @@ e.g. Change the line#20 in `AutomobileDealershipDBMS.c` file from:
   ```
   To:
   ```c
-    *ErrMsg = (int)sqlite3_open_v2("**NAME OF YOUR DATABASE FILE**", &db, SQLITE_OPEN_READWRITE, NULL) * sizeof(int);
+    *ErrMsg = (int)sqlite3_open_v2("YourFileName.db", &db, SQLITE_OPEN_READWRITE, NULL) * sizeof(int);
   ```
 
 ## Design
