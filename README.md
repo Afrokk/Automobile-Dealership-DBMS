@@ -9,7 +9,7 @@
   <p align="center">
     Streamline Your Automobile Dealership - Get Your Cars On The Road Faster!
     <br />
-    <a href="https://github.com/Afrokk/Automobile-Dealership-DBMS/blob/main/Documentation/Demo.pdf"><strong>Check it out Live! »</strong></a>
+    <a href="https://github.com/Afrokk/Automobile-Dealership-DBMS/blob/main/Documentation/Demo.pdf"><strong>Documentation »</strong></a>
     <br />
   </p>
 </div>
