@@ -1,6 +1,6 @@
 <br />
 <div align="center">
-  <a href="https://afrokk.github.io/Vintage-Autohaus/">
+  <a href="https://github.com/Afrokk/Automobile-Dealership-DBMS">
     <img src="Assets/clip.png" alt="Logo" width="315" height="315">
   </a>
 
