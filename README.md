@@ -27,7 +27,7 @@ Useful links: [ERD Documentation](https://github.com/Afrokk/Automobile-Dealershi
 
 ## Built With
 
-Utilized SASS for CSS compiling, bundling and optimizations, jQuery for some animations and Bootstrap 5 for a lot of the design.
+Built with C, using SQLite3 database. 
 
 * [![SQLite][SQLite.com]][SQLite-url]
 * [![C][C.com]][C-url]
