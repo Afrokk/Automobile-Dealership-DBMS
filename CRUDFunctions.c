@@ -36,7 +36,7 @@ void AddNewVehicle(sqlite3 *db) {
   char *InventoryLotNumber = malloc(sizeof(char) * 20);
   char *SalesmanID = malloc(sizeof(char) * 20);
   puts("\n---- Add a New Vehicle ----\n");
-  printf("Enter the VIN: ");
+  printf("Enter the Dealership VIN (Numbers Only!): ");
   fgets(VIN, 20, stdin);
   CleanupData(VIN);
   printf("Enter the Manufacturer: ");
