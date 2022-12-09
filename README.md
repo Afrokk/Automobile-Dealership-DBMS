@@ -18,13 +18,6 @@
 
 A Database Management System using SQL for an Automobile Dealership. Keeps track of active inventory, customers, repairs, work orders, and much more. Ideal for a small sized dealership - simple & lightweight.
 
-## Database Design (ERD)
-<p align="center">
-  <img src="Assets/ERD.jpg">
-</p>
-
-Useful links: [ERD Documentation](https://github.com/Afrokk/Automobile-Dealership-DBMS/blob/main/Documentation/ERDDocumentation.pdf), [Schema Documentation](https://github.com/Afrokk/Automobile-Dealership-DBMS/blob/main/Documentation/SchemaDocumentation.pdf).
-
 ## Built With
 
 Built with C, using SQLite3 database. 
@@ -32,6 +25,13 @@ Built with C, using SQLite3 database.
 * [![SQLite][SQLite.com]][SQLite-url]
 * [![C][C.com]][C-url]
 * [![Shell][Shell.com]][Shell-url]
+
+## Database Design (ERD)
+<p align="center">
+  <img src="Assets/ERD.jpg" alt="ERD Diagram." width="600">
+</p>
+
+Useful links: [ERD Documentation](https://github.com/Afrokk/Automobile-Dealership-DBMS/blob/main/Documentation/ERDDocumentation.pdf), [Schema Documentation](https://github.com/Afrokk/Automobile-Dealership-DBMS/blob/main/Documentation/SchemaDocumentation.pdf).
 
 ## Features
 
